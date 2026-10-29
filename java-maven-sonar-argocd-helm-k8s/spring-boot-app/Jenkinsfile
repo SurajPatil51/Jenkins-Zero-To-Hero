@@ -2,20 +2,14 @@ pipeline {
   agent {
     docker {
       image 'abhishekf5/maven-abhishek-docker-agent:v1'
-      args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
+      args '--entrypoint="" --user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
+  options {
+    // Automatically cleans workspace safely before checking out code
+    buildDiscarder(logRotator(numToKeepStr: '5'))
+  }
   stages {
-    stage('Clean Workspace') {
-      steps {
-        cleanWs()
-      }
-    }
-    stage('Checkout') {
-      steps {
-        sh 'echo passed'
-      }
-    }
     stage('Build Artifact') {
       steps {
         sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
@@ -27,7 +21,8 @@ pipeline {
       }
       steps {
         withCredentials([string(credentialsId: 'Sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
-          sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'        }
+          sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
+        }
       }
     }
     stage('Build and Push Docker Image') {
