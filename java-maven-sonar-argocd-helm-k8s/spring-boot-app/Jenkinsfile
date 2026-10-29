@@ -6,10 +6,17 @@ pipeline {
     }
   }
   options {
-    // Automatically cleans workspace safely before checking out code
+    skipDefaultCheckout()
     buildDiscarder(logRotator(numToKeepStr: '5'))
   }
   stages {
+    stage('Checkout and Clean') {
+      steps {
+        // Safely remove any leftover locked files from previous builds
+        sh 'rm -rf java-maven-sonar-argocd-helm-k8s/spring-boot-app/target || true'
+        checkout scm
+      }
+    }
     stage('Build Artifact') {
       steps {
         sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
@@ -25,16 +32,13 @@ pipeline {
         }
       }
     }
-stage('Build and Push Docker Image') {
+    stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "surajpatil1/ultimate-cicd:${BUILD_NUMBER}"
       }
       steps {
         script {
-            // 1. Build the image inside the agent container
             sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
-            
-            // 2. Securely login and push using password-stdin (bypasses the CLI header bug)
             withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                 sh '''
                     echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
