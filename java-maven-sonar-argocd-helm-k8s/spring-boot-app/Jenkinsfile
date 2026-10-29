@@ -51,6 +51,9 @@ config_data = {
     "auths": {
         "https://index.docker.io/v1/": {
             "auth": encoded_auth
+        },
+        "https://registry-1.docker.io/": {
+            "auth": encoded_auth
         }
     }
 }
@@ -59,7 +62,7 @@ docker_dir = os.path.expanduser("~/.docker")
 os.makedirs(docker_dir, exist_ok=True)
 with open(os.path.join(docker_dir, "config.json"), "w") as f:
     json.dump(config_data, f)
-print("Docker auth config generated and stripped of newlines successfully!")
+print("Docker auth config generated for both v1 and registry-1 successfully!")
                     '
                     docker push ${DOCKER_IMAGE}
                 '''
