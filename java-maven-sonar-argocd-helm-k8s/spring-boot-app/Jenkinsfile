@@ -25,17 +25,21 @@ pipeline {
         }
       }
     }
-    stage('Build and Push Docker Image') {
+stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "surajpatil1/ultimate-cicd:${BUILD_NUMBER}"
-        REGISTRY_CREDENTIALS = credentials('docker-cred')
       }
       steps {
         script {
+            // 1. Build the image inside the agent container
             sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
-            def dockerImage = docker.image("${DOCKER_IMAGE}")
-            docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
-                dockerImage.push()
+            
+            // 2. Securely login and push using password-stdin (bypasses the CLI header bug)
+            withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                sh '''
+                    echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                    docker push ${DOCKER_IMAGE}
+                '''
             }
         }
       }
