@@ -12,7 +12,6 @@ pipeline {
   stages {
     stage('Checkout and Clean') {
       steps {
-        // Safely remove any leftover locked files from previous builds
         sh 'rm -rf java-maven-sonar-argocd-helm-k8s/spring-boot-app/target || true'
         checkout scm
       }
@@ -32,13 +31,13 @@ pipeline {
         }
       }
     }
-stage('Build and Push Docker Image') {
+    stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "surajpatil1/ultimate-cicd:${BUILD_NUMBER}"
       }
       steps {
         script {
-            sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'[cite: 1]
+            sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
             withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                 sh '''
                     python3 -c '
