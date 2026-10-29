@@ -9,6 +9,7 @@ pipeline {
     skipDefaultCheckout()
     buildDiscarder(logRotator(numToKeepStr: '5'))
   }
+  stages {
     stage('Checkout and Clean') {
       steps {
         sh 'rm -rf java-maven-sonar-argocd-helm-k8s/spring-boot-app/target .git/objects || true'
@@ -89,3 +90,4 @@ print(f"Docker auth config generated successfully for lowercase user: {user}")
         }
     }
   }
+}
