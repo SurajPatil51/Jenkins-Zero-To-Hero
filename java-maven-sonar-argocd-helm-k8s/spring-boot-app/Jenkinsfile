@@ -42,7 +42,7 @@ pipeline {
                 sh '''
                     python3 -c '
 import base64, json, os
-user = os.environ["DOCKER_USER"].strip()
+user = os.environ["DOCKER_USER"].strip().lower()
 pwd = os.environ["DOCKER_PASS"].strip()
 auth_str = f"{user}:{pwd}"
 encoded_auth = base64.b64encode(auth_str.encode("utf-8")).decode("utf-8")
@@ -62,7 +62,7 @@ docker_dir = os.path.expanduser("~/.docker")
 os.makedirs(docker_dir, exist_ok=True)
 with open(os.path.join(docker_dir, "config.json"), "w") as f:
     json.dump(config_data, f)
-print("Docker auth config generated for both v1 and registry-1 successfully!")
+print(f"Docker auth config generated successfully for lowercase user: {user}")
                     '
                     docker push ${DOCKER_IMAGE}
                 '''
