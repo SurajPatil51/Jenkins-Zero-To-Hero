@@ -44,7 +44,7 @@ pipeline {
 import subprocess, os
 user = os.environ["DOCKER_USER"]
 pwd = os.environ["DOCKER_PASS"]
-p = subprocess.run(["docker", "login", "-u", user, "--password-stdin", "https://index.docker.io/v1/"], input=pwd.encode(), text=True)
+p = subprocess.run(["docker", "login", "-u", user, "--password-stdin", "https://index.docker.io/v1/"], input=pwd, text=True)
 exit(p.returncode)
                     '
                     docker push ${DOCKER_IMAGE}
