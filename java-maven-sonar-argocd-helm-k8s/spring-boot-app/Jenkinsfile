@@ -84,7 +84,7 @@ print(f"Docker auth config generated successfully for lowercase user: {user}")
                     sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                     git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                     git commit -m "CI: update image tag to ${BUILD_NUMBER}"
-                    git push https://${GITHUB_TOKEN}@github.com/SurajPatil51/Jenkins-Zero-To-Hero.git main
+                    git push https://${GITHUB_TOKEN}@github.com/SurajPatil51/Jenkins-Zero-To-Hero.git HEAD:main
                 '''
             }
         }
