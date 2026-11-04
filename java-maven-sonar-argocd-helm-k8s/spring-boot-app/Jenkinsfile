@@ -88,12 +88,12 @@ print(f"Docker auth config generated successfully for lowercase user: {user}")
                     git config --global user.name "SurajPatil51"
                     
                     # Clean up any old clone attempts
-                    rm -rf ultimate-cicd-manifests
+                    rm -rf cicd-manifests
                     
                     # Clone the separate manifests repository using the GitHub token
-                    git clone https://${GITHUB_TOKEN}@github.com/SurajPatil51/ultimate-cicd-manifests.git
+                    git clone https://${GITHUB_TOKEN}@github.com/SurajPatil51/cicd-manifests.git
                     
-                    cd ultimate-cicd-manifests
+                    cd cicd-manifests
                     
                     # Update the image tag dynamically
                     sed -i "s|surajpatil1/ultimate-cicd:.*|surajpatil1/ultimate-cicd:${BUILD_NUMBER}|g" deployment.yml
@@ -102,7 +102,7 @@ print(f"Docker auth config generated successfully for lowercase user: {user}")
                     git commit -m "GitOps: update image tag to ${BUILD_NUMBER}"
                     
                     # Push back to the manifests repo
-                    git push https://${GITHUB_TOKEN}@github.com/SurajPatil51/ultimate-cicd-manifests.git HEAD:main
+                    git push https://${GITHUB_TOKEN}@github.com/SurajPatil51/cicd-manifests.git HEAD:main
                 '''
             }
         }
