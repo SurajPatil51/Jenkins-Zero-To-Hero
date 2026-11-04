@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       image 'abhishekf5/maven-abhishek-docker-agent:v1'
-      args '--entrypoint="" --user root -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker'
+      args '--entrypoint="" --user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
   options {
@@ -12,7 +12,7 @@ pipeline {
   stages {
     stage('Checkout and Clean') {
       steps {
-        sh 'rm -rf java-maven-sonar-argocd-helm-k8s/spring-boot-app/target || true'
+        sh 'rm -rf java-maven-sonar-argocd-helm-k8s/spring-boot-app/target .git/objects || true'
         checkout scm
       }
     }
@@ -23,7 +23,7 @@ pipeline {
     }
     stage('Static Code Analysis') {
       environment {
-        SONAR_URL = "http://172.17.0.2:9000"
+        SONAR_URL = "http://172.17.0.3:9000"
       }
       steps {
         withCredentials([string(credentialsId: 'Sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
@@ -37,15 +37,6 @@ pipeline {
       }
       steps {
         script {
-            sh '''
-                if ! command -v docker &> /dev/null || docker version 2>&1 | grep -q "GLIBC"; then
-                    echo "Installing static docker client..."
-                    curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-24.0.7.tgz -o docker.tgz
-                    tar xzvf docker.tgz
-                    cp docker/docker /usr/local/bin/
-                    rm -rf docker.tgz docker
-                fi
-            '''
             sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
             withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                 sh '''
@@ -92,7 +83,7 @@ print(f"Docker auth config generated successfully for lowercase user: {user}")
                     BUILD_NUMBER=${BUILD_NUMBER}
                     sed -i "s|surajpatil1/ultimate-cicd:.*|surajpatil1/ultimate-cicd:${BUILD_NUMBER}|g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                     git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-                    git commit -m "CI: update image tag to ${BUILD_NUMBER} [ci skip]"
+                    git commit -m "CI: update image tag to ${BUILD_NUMBER}"
                     git push https://${GITHUB_TOKEN}@github.com/SurajPatil51/Jenkins-Zero-To-Hero.git HEAD:main
                 '''
             }
@@ -100,4 +91,3 @@ print(f"Docker auth config generated successfully for lowercase user: {user}")
     }
   }
 }
-//test
