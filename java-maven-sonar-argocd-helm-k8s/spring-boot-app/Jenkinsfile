@@ -23,7 +23,7 @@ pipeline {
     }
     stage('Static Code Analysis') {
       environment {
-        SONAR_URL = "http://172.17.0.2:9000"
+        SONAR_URL = "http://172.17.0.3:9000"
       }
       steps {
         withCredentials([string(credentialsId: 'Sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
@@ -37,7 +37,17 @@ pipeline {
       }
       steps {
         script {
+            // Install a static Docker CLI binary to bypass container GLIBC mismatch
+            sh '''
+                curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-24.0.7.tgz -o docker.tgz
+                tar xzvf docker.tgz
+                cp docker/docker /usr/local/bin/docker
+                rm -rf docker.tgz docker
+                docker --version
+            '''
+            
             sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
+            
             withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                 sh '''
                     python3 -c '
