@@ -91,3 +91,4 @@ print(f"Docker auth config generated successfully for lowercase user: {user}")
     }
   }
 }
+//testingls
