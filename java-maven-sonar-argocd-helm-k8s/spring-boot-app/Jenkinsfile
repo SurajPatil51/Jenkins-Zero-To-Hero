@@ -37,7 +37,7 @@ pipeline {
       }
       steps {
         script {
-            // Install a static Docker CLI binary to bypass container GLIBC mismatch
+            // Install static Docker CLI binary to bypass container GLIBC mismatch
             sh '''
                 curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-24.0.7.tgz -o docker.tgz
                 tar xzvf docker.tgz
@@ -80,21 +80,29 @@ print(f"Docker auth config generated successfully for lowercase user: {user}")
         }
       }
     }
-    stage('Update Deployment File') {
-        environment {
-            GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
-            GIT_USER_NAME = "SurajPatil51"
-        }
+    stage('Update Manifests Repository') {
         steps {
             withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                 sh '''
-                    git config user.email "suraj@example.com"
-                    git config user.name "SurajPatil51"
-                    BUILD_NUMBER=${BUILD_NUMBER}
-                    sed -i "s|surajpatil1/ultimate-cicd:.*|surajpatil1/ultimate-cicd:${BUILD_NUMBER}|g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-                    git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-                    git commit -m "CI: update image tag to ${BUILD_NUMBER}"
-                    git push https://${GITHUB_TOKEN}@github.com/SurajPatil51/Jenkins-Zero-To-Hero.git HEAD:main
+                    git config --global user.email "suraj@example.com"
+                    git config --global user.name "SurajPatil51"
+                    
+                    # Clean up any old clone attempts
+                    rm -rf ultimate-cicd-manifests
+                    
+                    # Clone the separate manifests repository using the GitHub token
+                    git clone https://${GITHUB_TOKEN}@github.com/SurajPatil51/ultimate-cicd-manifests.git
+                    
+                    cd ultimate-cicd-manifests
+                    
+                    # Update the image tag dynamically
+                    sed -i "s|surajpatil1/ultimate-cicd:.*|surajpatil1/ultimate-cicd:${BUILD_NUMBER}|g" deployment.yml
+                    
+                    git add deployment.yml
+                    git commit -m "GitOps: update image tag to ${BUILD_NUMBER}"
+                    
+                    # Push back to the manifests repo
+                    git push https://${GITHUB_TOKEN}@github.com/SurajPatil51/ultimate-cicd-manifests.git HEAD:main
                 '''
             }
         }
