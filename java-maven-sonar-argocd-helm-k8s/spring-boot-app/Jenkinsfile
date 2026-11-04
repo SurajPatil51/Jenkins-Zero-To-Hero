@@ -12,7 +12,7 @@ pipeline {
   stages {
     stage('Checkout and Clean') {
       steps {
-        sh 'rm -rf java-maven-sonar-argocd-helm-k8s/spring-boot-app/target .git/objects || true'
+        sh 'rm -rf java-maven-sonar-argocd-helm-k8s/spring-boot-app/target || true'
         checkout scm
       }
     }
